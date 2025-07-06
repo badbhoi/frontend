@@ -4,13 +4,29 @@ import { useAuth } from '../context/AuthContext'
 import TransactionsTable from '../components/Table'
 import QueryForm from '../components/Form'
 import logo from "../assets/logo2.svg"
+import { useAuthMutations } from '../components/useApi'
+import { useUserProfile } from '../components/useUserProfile'
 
 
 const Homepage: React.FC = () => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
+   const { logoutMutation } = useAuthMutations()
+  const { 
+    data: userProfile, 
+    isLoading: isProfileLoading, 
+    error: profileError,
+  } = useUserProfile(user?.id)
+
   const [isQueryFormOpen, setIsQueryFormOpen] = useState(false)
- 
-  console.log(user)
+   console.log(userProfile)
+
+    const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync()
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   const handleOpenQueryForm = () => {
     setIsQueryFormOpen(true)
@@ -19,6 +35,22 @@ const Homepage: React.FC = () => {
   const handleCloseQueryForm = () => {
     setIsQueryFormOpen(false)
   }
+
+   if (isProfileLoading) {
+  return (
+    <div className="min-h-screen bg-[#1a1e35] flex items-center justify-center">
+      <div className="text-white text-lg">Loading users...</div>
+    </div>
+  )
+}
+
+if (profileError) {
+  return (
+    <div className="min-h-screen bg-[#1a1e35] flex items-center justify-center">
+      <div className="text-white text-lg">Error loading users: {profileError?.message}</div>
+    </div>
+  )
+}
 
   return (
     <div className="min-h-screen">
@@ -33,11 +65,14 @@ const Homepage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <button
                 // onClick={logout}
-                onClick={async () => await logout()}
+                // onClick={async () => await logout()}
+                    onClick={handleLogout}
+                disabled={logoutMutation.isPending}
                 className="flex items-center px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                {/* Logout */}
+                 {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
               </button>
             </div>
           </div>

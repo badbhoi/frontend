@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState} from 'react'
 import { Save, X, Trash2, Edit, Plus } from 'lucide-react'
-import { supabase } from '../context/AuthContext'
+import { useAllUsers, useUserMutations } from '../components/useUserProfile'
 
 interface Transaction {
   from: string
@@ -20,8 +20,12 @@ interface User {
 }
 
 export const UserTable: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
+  const { updateBalanceMutation, deleteUserMutation, updateProfileMutation } = useUserMutations()
+const { data: users = [], isLoading: loading, error } = useAllUsers()
+
+
+  // const [users, setUsers] = useState<User[]>([])
+  // const [loading, setLoading] = useState(true)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showTransactionModal, setShowTransactionModal] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
@@ -34,7 +38,7 @@ export const UserTable: React.FC = () => {
 
 
 
-console.log( setExpandedTransactions)
+console.log( setExpandedTransactions,setIsSubmitting)
   const userOptions  = [
     '1thdr4...4c710n',
    'iwh3rs...379ac1',
@@ -56,40 +60,7 @@ console.log( setExpandedTransactions)
    'l4m5n6...o7p8q9',
 ];
 
-  // Fetch all users
-  const fetchUsers = async () => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching users:', error)
-      } else {
-        setUsers(data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching users:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // useEffect(() => {
-  //   fetchUsers()
-  // }, [])
-
-  useEffect(() => {
-  fetchUsers()
-  
-  const timeoutId = setTimeout(() => {
-    setLoading(false)
-  }, 10000) // 10 second timeout
-  
-  return () => clearTimeout(timeoutId)
-}, [])
+ 
 
   // Start editing a user's balance
   const startEditingBalance = (user: User) => {
@@ -108,132 +79,114 @@ console.log( setExpandedTransactions)
   }
 
   // Close modals
+  // const closeModals = () => {
+  //   setShowEditModal(false)
+  //   setShowTransactionModal(false)
+  //   setEditingUser(null)
+  //   setEditBalance(0)
+  //   setTransactionAmount(0)
+  //   setFromUser('')
+  //   setToUser('')
+  //   setIsSubmitting(false)
+  // }
+
   const closeModals = () => {
-    setShowEditModal(false)
-    setShowTransactionModal(false)
-    setEditingUser(null)
-    setEditBalance(0)
-    setTransactionAmount(0)
-    setFromUser('')
-    setToUser('')
-    setIsSubmitting(false)
-  }
+  setShowEditModal(false)
+  setShowTransactionModal(false)
+  setEditingUser(null)
+  setEditBalance(0)
+  setTransactionAmount(0)
+  setFromUser('')
+  setToUser('')
+  
+  // Reset mutation states
+  updateBalanceMutation.reset()
+  deleteUserMutation.reset()
+  updateProfileMutation.reset()
+}
 
   // Save balance changes only (no transaction)
-  const saveBalance = async () => {
-    if (!editingUser) return
-    
-    setIsSubmitting(true)
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          balance: editBalance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', editingUser.id)
-
-      if (error) {
-        console.error('Error updating balance:', error)
-        alert('Error updating balance: ' + error.message)
-      } else {
-        alert('Balance updated successfully!')
-        closeModals()
-        fetchUsers()
-      }
-    } catch (error) {
-      console.error('Error updating balance:', error)
-      alert('Error updating balance')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Add transaction with amount
-  const addTransaction = async () => {
-    if (!editingUser) return
-    
-    if (!fromUser || !toUser || transactionAmount === 0) {
-      alert('Please enter valid From, To usernames and amount (can be negative)')
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      // Create the transaction object
-      const newTransaction = {
-        from: fromUser,
-        to: toUser,
-        amount: transactionAmount,
-        timestamp: new Date().toISOString()
-      }
-
-      // Get current transactions
-      const currentTransactions = editingUser.transactions || []
-      const updatedTransactions = [...currentTransactions, newTransaction]
-
-      // Update user with new transaction
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          transactions: updatedTransactions,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', editingUser.id)
-
-      if (error) {
-        console.error('Error adding transaction:', error)
-        alert('Error adding transaction: ' + error.message)
-      } else {
-        alert('Transaction added successfully!')
-        closeModals()
-        fetchUsers()
-      }
-    } catch (error) {
-      console.error('Error adding transaction:', error)
-      alert('Error adding transaction')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-
-
-  // Delete user
-  const deleteUser = async (userId: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId)
-
-      if (error) {
-        console.error('Error deleting user:', error)
-        alert('Error deleting user: ' + error.message)
-      } else {
-        alert('User deleted successfully!')
-        fetchUsers()
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      alert('Error deleting user')
-    }
-  }
-
+const saveBalance = async () => {
+  if (!editingUser) return
   
+  try {
+    await updateBalanceMutation.mutateAsync({
+      userId: editingUser.id,
+      balance: editBalance
+    })
+    alert('Balance updated successfully!')
+    closeModals()
+  } catch (error) {
+    console.error('Error updating balance:', error)
+    alert('Error updating balance')
+  }
+}
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#1a1e35] flex items-center justify-center">
-        <div className="text-white text-lg">Loading users...</div>
-      </div>
-    )
+
+const addTransaction = async () => {
+  if (!editingUser) return
+  
+  if (!fromUser || !toUser || transactionAmount === 0) {
+    alert('Please enter valid From, To usernames and amount (can be negative)')
+    return
   }
 
+  try {
+    // Create the transaction object
+    const newTransaction = {
+      from: fromUser,
+      to: toUser,
+      amount: transactionAmount,
+      timestamp: new Date().toISOString()
+    }
+
+    // Get current transactions
+    const currentTransactions = editingUser.transactions || []
+    const updatedTransactions = [...currentTransactions, newTransaction]
+
+    await updateProfileMutation.mutateAsync({
+      userId: editingUser.id,
+      updates: { transactions: updatedTransactions }
+    })
+
+    alert('Transaction added successfully!')
+    closeModals()
+  } catch (error) {
+    console.error('Error adding transaction:', error)
+    alert('Error adding transaction')
+  }
+}
+
+
+const deleteUser = async (userId: string) => {
+  if (!window.confirm('Are you sure you want to delete this user?')) {
+    return
+  }
+
+  try {
+    await deleteUserMutation.mutateAsync(userId)
+    alert('User deleted successfully!')
+  } catch (error) {
+    console.error('Error deleting user:', error)
+    alert('Error deleting user')
+  }
+}
+
+ if (loading) {
+  return (
+    <div className="min-h-screen bg-[#1a1e35] flex items-center justify-center">
+      <div className="text-white text-lg">Loading users...</div>
+    </div>
+  )
+}
+
+if (error) {
+  return (
+    <div className="min-h-screen bg-[#1a1e35] flex items-center justify-center">
+      <div className="text-white text-lg">Error loading users: {error.message}</div>
+    </div>
+  )
+}
   return (
     <div className="min-h-screen bg-[#1a1e35] sm:p-8">
       <div className="max-w-7xl mx-auto">
@@ -283,7 +236,9 @@ console.log( setExpandedTransactions)
                        
                      
                           <button
-                            onClick={() => deleteUser(user.id)}
+                            // onClick={() => deleteUser(user.id)}
+                              onClick={() => deleteUser(user.id)}
+  disabled={deleteUserMutation.isPending}
                             className="p-1 text-red-400 hover:text-red-300 transition-colors"
                             title="Delete"
                           >
@@ -300,7 +255,7 @@ console.log( setExpandedTransactions)
                             <h4 className="text-[#66e0c8] font-medium mb-2">Transaction History</h4>
                             {user.transactions && user.transactions.length > 0 ? (
                               <div className="space-y-2 max-h-40 overflow-y-auto">
-                                {user.transactions.map((transaction, index) => (
+                                {user.transactions.map((transaction: { from: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; to: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; amount: number; timestamp: string | number | Date }, index: React.Key | null | undefined) => (
                                   <div key={index} className="bg-[#252a47] p-3 rounded text-sm">
                                     <div className="flex justify-between items-center">
                                       <span>
@@ -375,8 +330,10 @@ console.log( setExpandedTransactions)
 
               <div className="flex space-x-3 pt-4">
                 <button
-                  onClick={saveBalance}
-                  disabled={isSubmitting}
+                  // onClick={saveBalance}
+                  // disabled={isSubmitting}
+                     onClick={saveBalance}
+    disabled={updateBalanceMutation.isPending}
                   className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors flex items-center justify-center space-x-2"
                 >
                   <Save className="h-4 w-4" />
@@ -465,8 +422,10 @@ console.log( setExpandedTransactions)
 
               <div className="flex space-x-3 pt-4">
                 <button
-                  onClick={addTransaction}
-                  disabled={isSubmitting}
+                  // onClick={addTransaction}
+                  // disabled={isSubmitting}
+                    onClick={addTransaction}
+  disabled={updateProfileMutation.isPending}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
                 >
                   {isSubmitting ? 'Adding...' : 'Add Transaction'}
