@@ -1,375 +1,21 @@
-// import  { useState, useEffect } from 'react'; // Import useEffect
-// import { PencilIcon, CheckIcon, XIcon, PlusIcon } from 'lucide-react';
-
-// interface UserData {
-//   _id: string; // Changed from 'id' to '_id' to match MongoDB's default ID field
-//   username: string;
-//   amount: number;
-//   isEditing?: boolean;
-// }
-
-// export function UserTable() {
-//   const [users, setUsers] = useState<UserData[]>([]);
-//   const [newUser, setNewUser] = useState({
-//     username: '',
-//     amount: '',
-//   });
-//   const [editValues, setEditValues] = useState<{
-//     [key: string]: string;
-//   }>({});
-//   const [showAddForm, setShowAddForm] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-
-//   // --- Fetch Users on Component Mount ---
-//   useEffect(() => {
-//     fetchUsers();
-//   }, []);
-
-//   const fetchUsers = async () => {
-//     setLoading(true);
-//     setError(null);
-//     try {
-//       const response = await fetch('http://localhost:5000/api/users/all-users'); // Replace with your backend URL
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-//       const data = await response.json();
-//       setUsers(data);
-//     } catch (err: any) {
-//       setError(`Failed to fetch users: ${err.message}`);
-//       console.error("Failed to fetch users:", err);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const startEditing = (userId: string) => {
-//     setUsers(
-//       users.map((user) =>
-//         user._id === userId
-//           ? {
-//               ...user,
-//               isEditing: true,
-//             }
-//           : {
-//               ...user,
-//               isEditing: false, // Ensure only one user is in edit mode
-//             },
-//       ),
-//     );
-//     const userToEdit = users.find((user) => user._id === userId);
-//     if (userToEdit) {
-//       setEditValues({
-//         ...editValues,
-//         [userId]: userToEdit.amount.toString(),
-//       });
-//     }
-//   };
-
-//   const cancelEditing = (userId: string) => {
-//     setUsers(
-//       users.map((user) =>
-//         user._id === userId
-//           ? {
-//               ...user,
-//               isEditing: false,
-//             }
-//           : user,
-//       ),
-//     );
-//     // Remove the temporary edit value for this user
-//     const newEditValues = { ...editValues };
-//     delete newEditValues[userId];
-//     setEditValues(newEditValues);
-//   };
-
-//   const saveEdit = async (userId: string) => {
-//     const newAmount = parseFloat(editValues[userId]);
-//     if (isNaN(newAmount)) {
-//       alert('Please enter a valid number for amount.');
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch(`http://localhost:5000/api/users/${userId}/amount`, {
-//         method: 'PATCH',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           // 'Authorization': 'Bearer YOUR_AUTH_TOKEN' // Add if you have auth middleware on this route
-//         },
-//         body: JSON.stringify({ amount: newAmount }),
-//       });
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-//       }
-
-//       // Update the local state with the new amount
-//       setUsers(
-//         users.map((user) =>
-//           user._id === userId
-//             ? {
-//                 ...user,
-//                 amount: newAmount,
-//                 isEditing: false,
-//               }
-//             : user,
-//         ),
-//       );
-//       // Clean up edit value
-//       const newEditValues = { ...editValues };
-//       delete newEditValues[userId];
-//       setEditValues(newEditValues);
-
-//     } catch (err: any) {
-//       alert(`Failed to update amount: ${err.message}`);
-//       console.error("Failed to update amount:", err);
-//     }
-//   };
-
-//   const handleEditChange = (userId: string, value: string) => {
-//     setEditValues({
-//       ...editValues,
-//       [userId]: value,
-//     });
-//   };
-
-//   const handleDeleteUser = async (userId: string) => {
-//     if (!window.confirm('Are you sure you want to delete this user?')) {
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
-//         method: 'DELETE',
-//         headers: {
-//           // 'Authorization': 'Bearer YOUR_AUTH_TOKEN' // Add if you have auth middleware on this route
-//         },
-//       });
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-//       }
-
-//       // Remove the user from the local state
-//       setUsers(users.filter((user) => user._id !== userId));
-//       alert('User deleted successfully!');
-//     } catch (err: any) {
-//       alert(`Failed to delete user: ${err.message}`);
-//       console.error("Failed to delete user:", err);
-//     }
-//   };
-
-//   // The add user functionality remains frontend-only as per the current backend (no 'create user' route yet)
-//   const handleAddUser = () => {
-//     if (!newUser.username.trim()) {
-//       alert('Please enter a username');
-//       return;
-//     }
-//     const amountValue = parseFloat(newUser.amount);
-//     if (isNaN(amountValue)) {
-//       alert('Please enter a valid amount');
-//       return;
-//     }
-
-//     // This part is for client-side addition only because there's no backend route for creating a user yet.
-//     // If you add a POST /api/users route to your backend, you'd make an API call here.
-//     const newId = (
-//       Math.max(...users.map((u) => parseInt(u._id || '0')), 0) + 1 // Use _id from backend
-//     ).toString();
-
-//     setUsers([
-//       ...users,
-//       {
-//         _id: newId, // Assign a temporary client-side ID or fetch from backend after creation
-//         username: newUser.username,
-//         amount: amountValue,
-//       },
-//     ]);
-//     setNewUser({
-//       username: '',
-//       amount: '',
-//     });
-//     setShowAddForm(false);
-//   };
-
-
-//   if (loading) {
-//     return <section className='h-screen max-w-4xl flex justify-center items-center mx-auto'><div>Loading users...</div></section>;
-//   }
-
-//   if (error) {
-//     return <section className='h-screen max-w-4xl flex justify-center items-center mx-auto'><div className="text-red-500">Error: {error}</div></section>;
-//   }
-
-
-//   return (
-//     <section className='h-screen max-w-4xl flex justify-center items-center mx-auto'>
-//       <div className="bg-white rounded-lg shadow overflow-hidden w-full">
-//         <table className="min-w-full divide-y divide-gray-200">
-//           <thead className="bg-gray-50">
-//             <tr>
-//               <th
-//                 scope="col"
-//                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-//               >
-//                 Username
-//               </th>
-//               <th
-//                 scope="col"
-//                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-//               >
-//                 Amount
-//               </th>
-//               <th
-//                 scope="col"
-//                 className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-//               >
-//                 Actions
-//               </th>
-//             </tr>
-//           </thead>
-//           <tbody className="bg-white divide-y divide-gray-200">
-//             {users.length > 0 ? (
-//               users.map((user) => (
-//                 <tr key={user._id}>
-//                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-//                     {user.username}
-//                   </td>
-//                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-//                     {user.isEditing ? (
-//                       <input
-//                         type="number" // Use type="number" for amounts
-//                         className="border rounded px-2 py-1 w-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                         value={editValues[user._id] || ''}
-//                         onChange={(e) => handleEditChange(user._id, e.target.value)}
-//                       />
-//                     ) : (
-//                       `$${user.amount.toFixed(2)}`
-//                     )}
-//                   </td>
-//                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-//                     {user.isEditing ? (
-//                       <div className="flex justify-end space-x-2">
-//                         <button
-//                           onClick={() => saveEdit(user._id)}
-//                           className="text-green-600 hover:text-green-900"
-//                           aria-label="Save"
-//                         >
-//                           <CheckIcon size={18} />
-//                         </button>
-//                         <button
-//                           onClick={() => cancelEditing(user._id)}
-//                           className="text-red-600 hover:text-red-900"
-//                           aria-label="Cancel"
-//                         >
-//                           <XIcon size={18} />
-//                         </button>
-//                       </div>
-//                     ) : (
-//                       <div className="flex justify-end space-x-2">
-//                         <button
-//                           onClick={() => startEditing(user._id)}
-//                           className="text-blue-600 hover:text-blue-900"
-//                           aria-label="Edit"
-//                         >
-//                           <PencilIcon size={18} />
-//                         </button>
-//                         <button
-//                           onClick={() => handleDeleteUser(user._id)}
-//                           className="text-red-600 hover:text-red-900"
-//                           aria-label="Delete"
-//                         >
-//                           <XIcon size={18} />
-//                         </button>
-//                       </div>
-//                     )}
-//                   </td>
-//                 </tr>
-//               ))
-//             ) : (
-//               <tr>
-//                 <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-//                   No users found.
-//                 </td>
-//               </tr>
-//             )}
-//           </tbody>
-//         </table>
-//         {showAddForm ? (
-//           <div className="p-4 border-t border-gray-200 bg-gray-50">
-//             <div className="flex flex-col sm:flex-row gap-3">
-//               <input
-//                 type="text"
-//                 placeholder="Username"
-//                 className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 value={newUser.username}
-//                 onChange={(e) =>
-//                   setNewUser({
-//                     ...newUser,
-//                     username: e.target.value,
-//                   })
-//                 }
-//               />
-//               <input
-//                 type="number" // Use type="number"
-//                 placeholder="Amount"
-//                 className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 value={newUser.amount}
-//                 onChange={(e) =>
-//                   setNewUser({
-//                     ...newUser,
-//                     amount: e.target.value,
-//                   })
-//                 }
-//               />
-//               <div className="flex gap-2">
-//                 <button
-//                   onClick={handleAddUser}
-//                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-//                 >
-//                   Add
-//                 </button>
-//                 <button
-//                   onClick={() => setShowAddForm(false)}
-//                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
-//                 >
-//                   Cancel
-//                 </button>
-//               </div>
-//             </div>
-//           </div>
-//         ) : (
-//           <div className="p-4 border-t border-gray-200">
-//             <button
-//               onClick={() => setShowAddForm(true)}
-//               className="flex items-center text-blue-600 hover:text-blue-900"
-//             >
-//               <PlusIcon size={16} className="mr-1" />
-//               <span>Add New User (Frontend only)</span>
-//             </button>
-//           </div>
-//         )}
-//       </div>
-//     </section>
-//   );
-// }
-
-
-
 
 import React, { useState, useEffect } from 'react'
-import { Save, X, Trash2 } from 'lucide-react'
+import { Save, X, Trash2, Eye, EyeOff, Edit } from 'lucide-react'
 import { supabase } from '../context/AuthContext'
+
+interface Transaction {
+  from: string
+  to: string
+  amount: number
+  timestamp: string
+}
 
 interface User {
   id: string
   username: string
   email: string
   balance: number
+  transactions: Transaction[]
   created_at: string
   updated_at: string
 }
@@ -377,8 +23,13 @@ interface User {
 export const UserTable: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
   const [editBalance, setEditBalance] = useState<number>(0)
+  const [fromUser, setFromUser] = useState<string>('')
+  const [toUser, setToUser] = useState<string>('')
+  const [expandedTransactions, setExpandedTransactions] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Fetch all users
   const fetchUsers = async () => {
@@ -407,38 +58,87 @@ export const UserTable: React.FC = () => {
 
   // Start editing a user's balance
   const startEditing = (user: User) => {
-    setEditingUser(user.id)
+    setEditingUser(user)
     setEditBalance(user.balance)
+    setFromUser('')
+    setToUser('')
+    setShowEditModal(true)
   }
 
-  // Cancel editing
-  const cancelEditing = () => {
+  // Close modal
+  const closeModal = () => {
+    setShowEditModal(false)
     setEditingUser(null)
     setEditBalance(0)
+    setFromUser('')
+    setToUser('')
+    setIsSubmitting(false)
   }
 
-  // Save balance changes
-  const saveBalance = async (userId: string) => {
+  // Save balance changes using the database function
+  const saveBalance = async () => {
+    if (!editingUser) return
+    
+    if (!fromUser || !toUser) {
+      alert('Please enter both From and To usernames')
+      return
+    }
+
+    setIsSubmitting(true)
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          balance: editBalance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
+      const { error } = await supabase.rpc('update_user_balance', {
+        user_id: editingUser.id,
+        new_balance: editBalance,
+        from_user: fromUser,
+        to_user: toUser
+      })
 
       if (error) {
         console.error('Error updating balance:', error)
         alert('Error updating balance: ' + error.message)
       } else {
         alert('Balance updated successfully!')
-        setEditingUser(null)
-        fetchUsers() 
+        closeModal()
+        fetchUsers()
       }
     } catch (error) {
       console.error('Error updating balance:', error)
       alert('Error updating balance')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+ 
+  const addTransaction = async () => {
+    if (!editingUser) return
+    
+    if (!fromUser || !toUser) {
+      alert('Please enter both From and To usernames')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const { error } = await supabase.rpc('add_transaction', {
+        user_id: editingUser.id,
+        from_user: fromUser,
+        to_user: toUser
+      })
+
+      if (error) {
+        console.error('Error adding transaction:', error)
+        alert('Error adding transaction: ' + error.message)
+      } else {
+        alert('Transaction added successfully!')
+        closeModal()
+        fetchUsers()
+      }
+    } catch (error) {
+      console.error('Error adding transaction:', error)
+      alert('Error adding transaction')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -459,12 +159,21 @@ export const UserTable: React.FC = () => {
         alert('Error deleting user: ' + error.message)
       } else {
         alert('User deleted successfully!')
-        fetchUsers() // Refresh the list
+        fetchUsers()
       }
     } catch (error) {
       console.error('Error deleting user:', error)
       alert('Error deleting user')
     }
+  }
+
+  // Toggle transaction visibility
+  const toggleTransactions = (userId: string) => {
+    setExpandedTransactions(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    )
   }
 
   if (loading) {
@@ -492,66 +201,79 @@ export const UserTable: React.FC = () => {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-700 hover:bg-[#2a2f4a]">
-                    <td className="py-4 px-6">
-                      <span className="text-white">{user.username}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="text-white">{user.email}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      {editingUser === user.id ? (
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={editBalance}
-                          onChange={(e) => setEditBalance(parseFloat(e.target.value) || 0)}
-                          className="bg-[#1a1e35] text-white px-2 py-1 rounded border border-gray-600 focus:border-[#66e0c8] outline-none w-24"
-                        />
-                      ) : (
+                  <React.Fragment key={user.id}>
+                    <tr className="border-b border-gray-700 hover:bg-[#2a2f4a]">
+                      <td className="py-4 px-6">
+                        <span className="text-white">{user.username}</span>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="text-white">{user.email}</span>
+                      </td>
+                      <td className="py-4 px-6">
                         <span className="text-white">${user.balance.toFixed(2)}</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6">
-                      <div className="flex space-x-2">
-                        {editingUser === user.id ? (
-                          <>
-                            <button
-                              onClick={() => saveBalance(user.id)}
-                              className="p-1 text-green-400 hover:text-green-300 transition-colors"
-                              title="Save"
-                            >
-                              <Save className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={cancelEditing}
-                              className="p-1 text-gray-400 hover:text-gray-300 transition-colors"
-                              title="Cancel"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => startEditing(user)}
-                              className="px-2 py-1 text-blue-400 hover:text-blue-300 transition-colors text-sm"
-                              title="Edit Balance"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => deleteUser(user.id)}
-                              className="p-1 text-red-400 hover:text-red-300 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => startEditing(user)}
+                            className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
+                            title="Edit Balance"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => toggleTransactions(user.id)}
+                            className="p-1 text-purple-400 hover:text-purple-300 transition-colors"
+                            title="View Transactions"
+                          >
+                            {expandedTransactions.includes(user.id) ? 
+                              <EyeOff className="h-4 w-4" /> : 
+                              <Eye className="h-4 w-4" />
+                            }
+                          </button>
+                          <button
+                            onClick={() => deleteUser(user.id)}
+                            className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    {/* Transactions Row */}
+                    {expandedTransactions.includes(user.id) && (
+                      <tr className="bg-[#1a1e35]">
+                        <td colSpan={4} className="py-4 px-6">
+                          <div className="text-white">
+                            <h4 className="text-[#66e0c8] font-medium mb-2">Transaction History</h4>
+                            {user.transactions && user.transactions.length > 0 ? (
+                              <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {user.transactions.map((transaction, index) => (
+                                  <div key={index} className="bg-[#252a47] p-3 rounded text-sm">
+                                    <div className="flex justify-between items-center">
+                                      <span>
+                                        <span className="text-gray-300">From:</span> <span className="text-white">{transaction.from}</span>
+                                        {' → '}
+                                        <span className="text-gray-300">To:</span> <span className="text-white">{transaction.to}</span>
+                                      </span>
+                                      <span className="text-[#66e0c8]">${transaction.amount.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-gray-400 text-xs mt-1">
+                                      {new Date(transaction.timestamp).toLocaleString()}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-gray-400 text-sm">No transactions yet</p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -564,6 +286,98 @@ export const UserTable: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#252a47] rounded-lg p-6 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Edit User Balance</h2>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  User: {editingUser.username}
+                </label>
+                <p className="text-sm text-gray-400">Current Balance: ${editingUser.balance.toFixed(2)}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  New Balance
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editBalance}
+                  onChange={(e) => setEditBalance(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-[#1a1e35] text-white px-3 py-2 rounded border border-gray-600 focus:border-[#66e0c8] outline-none"
+                  placeholder="Enter new balance"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  From Username
+                </label>
+                <input
+                  type="text"
+                  value={fromUser}
+                  onChange={(e) => setFromUser(e.target.value)}
+                  className="w-full bg-[#1a1e35] text-white px-3 py-2 rounded border border-gray-600 focus:border-[#66e0c8] outline-none"
+                  placeholder="Enter from username"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  To Username
+                </label>
+                <input
+                  type="text"
+                  value={toUser}
+                  onChange={(e) => setToUser(e.target.value)}
+                  className="w-full bg-[#1a1e35] text-white px-3 py-2 rounded border border-gray-600 focus:border-[#66e0c8] outline-none"
+                  placeholder="Enter to username"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={saveBalance}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Save className="h-4 w-4" />
+                  <span>{isSubmitting ? 'Saving...' : 'Update Balance'}</span>
+                </button>
+                
+                <button
+                  onClick={addTransaction}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors"
+                >
+                  {isSubmitting ? 'Adding...' : 'Add Transaction Only'}
+                </button>
+              </div>
+
+              <button
+                onClick={closeModal}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

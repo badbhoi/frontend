@@ -14,6 +14,7 @@ interface User {
   username?: string
   email: string
   balance?: number
+  transaction?:any
 }
 
 interface AuthContextType {
@@ -66,43 +67,89 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 
 
-const refreshUser = useCallback(async () => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession()
+// const refreshUser = useCallback(async () => {
+//   try {
+//     const { data: { session } } = await supabase.auth.getSession()
     
-    if (session?.user) {
-      // Use session data first, then optionally fetch fresh profile data
-      const cachedUser = {
+//     if (session?.user) {
+//       // Use session data first, then optionally fetch fresh profile data
+//       const cachedUser = {
+//         id: session.user.id,
+//         email: session.user.email!,
+//         username: session.user.user_metadata?.username,
+//         balance: session.user.user_metadata?.balance,
+//         // transaction:session.user.user_metadata?.transaction
+//       }
+      
+//       // Set user immediately from session cache
+//       setUser(cachedUser)
+      
+//       // Optionally fetch fresh data in background (don't await)
+//       fetchUserProfile(session.user.id).then(profile => {
+//         if (profile) {
+//           setUser({
+//             id: session.user.id,
+//             email: session.user.email!,
+//             username: profile.username,
+//             balance: profile.balance,
+//             transaction:profile.transactions
+//           })
+//         }
+//       })
+//     } else {
+//       setUser(null)
+//     }
+//   } catch (error) {
+//     console.error('Error refreshing user:', error)
+//     setUser(null)
+//   }
+// }, [])
+
+  const refreshUser = useCallback(async () => {
+  try {
+    // const { data: { session } } = await supabase.auth.getSession()
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+  if (session?.user) {
+    // Fetch profile data instead of using metadata
+    const profile = await fetchUserProfile(session.user.id)
+    
+    if (profile) {
+      setUser({
         id: session.user.id,
         email: session.user.email!,
-        username: session.user.user_metadata?.username,
-        balance: session.user.user_metadata?.balance
-      }
-      
-      // Set user immediately from session cache
-      setUser(cachedUser)
-      
-      // Optionally fetch fresh data in background (don't await)
-      fetchUserProfile(session.user.id).then(profile => {
-        if (profile) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            username: profile.username,
-            balance: profile.balance
-          })
-        }
+        username: profile.username,
+        balance: profile.balance,
+        transaction: profile.transactions
       })
-    } else {
-      setUser(null)
     }
+  } else {
+    setUser(null)
+  }
+  setLoading(false)
+})
+    
+    // if (session?.user) {
+    //   // Don't set user immediately, wait for profile data
+    //   const profile = await fetchUserProfile(session.user.id)
+      
+    //   if (profile) {
+    //     setUser({
+    //       id: session.user.id,
+    //       email: session.user.email!,
+    //       username: profile.username,
+    //       balance: profile.balance,
+    //       transaction: profile.transactions
+    //     })
+    //   }
+    // } else {
+    //   setUser(null)
+    // }
   } catch (error) {
     console.error('Error refreshing user:', error)
     setUser(null)
   }
 }, [])
-
-  
 
 useEffect(() => {
   // Get initial session (this is cached by Supabase)
@@ -113,7 +160,8 @@ useEffect(() => {
         id: session.user.id,
         email: session.user.email!,
         username: session.user.user_metadata?.username,
-        balance: session.user.user_metadata?.balance
+        balance: session.user.user_metadata?.balance,
+        // transaction:session.user.user_metadata?.transaction
       })
     } else {
       setUser(null)
@@ -122,21 +170,44 @@ useEffect(() => {
   })
 
   // Listen for auth changes
+  // const { data: { subscription } } = supabase.auth.onAuthStateChange(
+  //   async (event, session) => {
+  //     if (session?.user) {
+  //       console.log(event)
+  //       setUser({
+  //         id: session.user.id,
+  //         email: session.user.email!,
+  //         username: session.user.user_metadata?.username,
+  //         balance: session.user.user_metadata?.balance,
+  //         // transaction:session.user.user_metadata?.transaction
+  //       })
+  //     } else {
+  //       setUser(null)
+  //     }
+  //   }
+  // )
+
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      if (session?.user) {
-        console.log(event)
+  async (event, session) => {
+    if (session?.user) {
+      console.log(event)
+      // Fetch profile data instead of using metadata
+      const profile = await fetchUserProfile(session.user.id)
+      
+      if (profile) {
         setUser({
           id: session.user.id,
           email: session.user.email!,
-          username: session.user.user_metadata?.username,
-          balance: session.user.user_metadata?.balance
+          username: profile.username,
+          balance: profile.balance,
+          transaction: profile.transactions
         })
-      } else {
-        setUser(null)
       }
+    } else {
+      setUser(null)
     }
-  )
+  }
+)
 
   return () => subscription.unsubscribe()
 }, [])

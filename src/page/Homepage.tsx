@@ -10,7 +10,7 @@ const Homepage: React.FC = () => {
   const { user, logout } = useAuth()
   const [isQueryFormOpen, setIsQueryFormOpen] = useState(false)
  
-
+  console.log(user)
 
   const handleOpenQueryForm = () => {
     setIsQueryFormOpen(true)
@@ -122,7 +122,7 @@ const Homepage: React.FC = () => {
           </div>
         </div>
 
-        <TransactionsTable />
+        <TransactionsTable check={user?.transaction} />
       </main>
 
   
