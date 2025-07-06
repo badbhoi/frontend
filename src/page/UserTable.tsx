@@ -77,9 +77,19 @@ console.log( setExpandedTransactions)
     }
   }
 
+  // useEffect(() => {
+  //   fetchUsers()
+  // }, [])
+
   useEffect(() => {
-    fetchUsers()
-  }, [])
+  fetchUsers()
+  
+  const timeoutId = setTimeout(() => {
+    setLoading(false)
+  }, 10000) // 10 second timeout
+  
+  return () => clearTimeout(timeoutId)
+}, [])
 
   // Start editing a user's balance
   const startEditingBalance = (user: User) => {
@@ -187,57 +197,7 @@ console.log( setExpandedTransactions)
     }
   }
 
-  // Add transaction and update balance
-  // const addTransactionAndUpdateBalance = async () => {
-  //   if (!editingUser) return
-    
-  //   if (!fromUser || !toUser || transactionAmount <= 0) {
-  //     alert('Please enter valid From, To usernames and amount')
-  //     return
-  //   }
 
-  //   setIsSubmitting(true)
-  //   try {
-  //     // Create the transaction object
-  //     const newTransaction = {
-  //       from: fromUser,
-  //       to: toUser,
-  //       amount: transactionAmount,
-  //       timestamp: new Date().toISOString()
-  //     }
-
-  //     // Get current transactions
-  //     const currentTransactions = editingUser.transactions || []
-  //     const updatedTransactions = [...currentTransactions, newTransaction]
-
-  //     // Calculate new balance (assuming this is money received)
-  //     const newBalance = editingUser.balance + transactionAmount
-
-  //     // Update user with new transaction and balance
-  //     const { error } = await supabase
-  //       .from('profiles')
-  //       .update({ 
-  //         transactions: updatedTransactions,
-  //         balance: newBalance,
-  //         updated_at: new Date().toISOString()
-  //       })
-  //       .eq('id', editingUser.id)
-
-  //     if (error) {
-  //       console.error('Error adding transaction and updating balance:', error)
-  //       alert('Error adding transaction and updating balance: ' + error.message)
-  //     } else {
-  //       alert('Transaction added and balance updated successfully!')
-  //       closeModals()
-  //       fetchUsers()
-  //     }
-  //   } catch (error) {
-  //     console.error('Error adding transaction and updating balance:', error)
-  //     alert('Error adding transaction and updating balance')
-  //   } finally {
-  //     setIsSubmitting(false)
-  //   }
-  // }
 
   // Delete user
   const deleteUser = async (userId: string) => {
@@ -264,14 +224,7 @@ console.log( setExpandedTransactions)
     }
   }
 
-  // Toggle transaction visibility
-  // const toggleTransactions = (userId: string) => {
-  //   setExpandedTransactions(prev => 
-  //     prev.includes(userId) 
-  //       ? prev.filter(id => id !== userId)
-  //       : [...prev, userId]
-  //   )
-  // }
+  
 
   if (loading) {
     return (
@@ -327,13 +280,7 @@ console.log( setExpandedTransactions)
                             <Plus className="h-4 w-4" />
                           </button>
                           
-                          {/* <button
-                            onClick={() => toggleTransactions(user.id)}
-                            className="p-1 text-yellow-400 hover:text-yellow-300 transition-colors"
-                            title="View Transactions"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button> */}
+                       
                      
                           <button
                             onClick={() => deleteUser(user.id)}
