@@ -125,6 +125,7 @@ useEffect(() => {
   const { data: { subscription } } = supabase.auth.onAuthStateChange(
     async (event, session) => {
       if (session?.user) {
+        console.log(event)
         setUser({
           id: session.user.id,
           email: session.user.email!,
