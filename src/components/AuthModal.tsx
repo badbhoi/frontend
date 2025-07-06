@@ -132,13 +132,7 @@ const AuthModal: React.FC = () => {
                 disabled={loading}
               />
             </div>
-            {/* {isLoginView && (
-              <div className="mb-6 text-right">
-                <a href="#" className="text-[#7cff4d] hover:underline text-sm">
-                  Forgot password?
-                </a>
-              </div>
-            )} */}
+        
             <button
               type="submit"
               disabled={loading}

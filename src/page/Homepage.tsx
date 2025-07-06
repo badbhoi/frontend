@@ -32,7 +32,8 @@ const Homepage: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={logout}
+                // onClick={logout}
+                onClick={async () => await logout()}
                 className="flex items-center px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
                 <LogOut className="h-4 w-4 mr-2" />

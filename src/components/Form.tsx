@@ -15,6 +15,8 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
+
 
 
   const SERVICE_ID = 'service_mxgitz4'
@@ -38,7 +40,7 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
     setIsSubmitting(true)
 
     try {
-      // EmailJS template parameters
+  
       const templateParams = {
      
         subject: subject,
@@ -50,11 +52,11 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
       await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
       
     
-    
+    setIsSuccess(true) 
       setSubject('')
       setMessage('')
       setQueryType('contact')
-      onClose()
+    //   onClose()
       
     } catch (error) {
       console.error('Error sending email:', error)
@@ -65,6 +67,12 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
   }
 
 
+//   if (!isOpen) return null
+  const handleClose = () => {
+    setIsSuccess(false)
+    onClose()
+  }
+
   if (!isOpen) return null
 
   return (
@@ -73,17 +81,32 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="flex justify-between items-center sm:p-6 p-4 border-b border-gray-600">
           <h2 className="text-xl font-semibold text-white">Withdraw Funds</h2>
-          <button
+
+          {!isSuccess &&     <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
             <X className="h-6 w-6" />
-          </button>
+          </button> }
+      
         </div>
-
-        {/* Form */}
+         <div className="p-6 space-y-6">
+ {isSuccess ? (
+      <div className=" p-6 rounded-md flex flex-col items-center justify-center space-y-4">
+              <p className="text-lg font-semibold text-center text-white">
+                Withdrawal Pending...
+              </p>
+              <button
+                onClick={handleClose}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+              >
+                Close
+              </button>
+            </div>
+  ) : (
+      
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Query Type Tabs */}
+        
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Note: please don't withdraw into a blank/New Btc wallet
@@ -145,7 +168,9 @@ const QueryForm: React.FC<QueryFormProps> = ({ isOpen, onClose }) => {
               </>
             )}
           </button>
-        </form>
+        </form> )}
+
+        </div>
       </div>
     </div>
   )
