@@ -78,17 +78,7 @@ console.log( setExpandedTransactions,setIsSubmitting)
     setShowTransactionModal(true)
   }
 
-  // Close modals
-  // const closeModals = () => {
-  //   setShowEditModal(false)
-  //   setShowTransactionModal(false)
-  //   setEditingUser(null)
-  //   setEditBalance(0)
-  //   setTransactionAmount(0)
-  //   setFromUser('')
-  //   setToUser('')
-  //   setIsSubmitting(false)
-  // }
+
 
   const closeModals = () => {
   setShowEditModal(false)
@@ -422,8 +412,7 @@ if (error) {
 
               <div className="flex space-x-3 pt-4">
                 <button
-                  // onClick={addTransaction}
-                  // disabled={isSubmitting}
+            
                     onClick={addTransaction}
   disabled={updateProfileMutation.isPending}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-4 py-2 rounded transition-colors"

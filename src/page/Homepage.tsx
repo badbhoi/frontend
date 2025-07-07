@@ -134,7 +134,7 @@ if (profileError) {
 
                     <div className='bg-[#1a1e35] p-4 rounded-lg '>
                        <span className="font-medium">Balance:</span> 
-                       <h1 className='font-bold text-lg'>{user.balance?.toFixed(2) || '0.00'} BTC </h1>
+                       <h1 className='font-bold text-lg'>{userProfile?.balance?.toFixed(2) || '0.00'} BTC </h1>
                        
               
                     </div>
@@ -158,7 +158,7 @@ if (profileError) {
           </div>
         </div>
 
-        <TransactionsTable check={user?.transaction} />
+        <TransactionsTable check={userProfile?.transactions} />
       </main>
 
   

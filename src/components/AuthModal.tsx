@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from 'react'
 import { Mail, Lock, User } from 'lucide-react'
 
@@ -66,7 +63,7 @@ const AuthModal: React.FC = () => {
       <div className="w-full max-w-md bg-[#1a1e35] rounded-lg shadow-xl overflow-hidden relative">
         <div className="p-8">
           <h1 className="text-center text-2xl font-medium text-[#66e0c8] mb-2">
-            {isLoginView ? 'StackSocial Login' : 'Sign Up'}
+            {isLoginView ? ' Login' : 'Sign Up'}
           </h1>
           <div className='flex justify-center mb-2'>
             <img src={logo} alt="logo" width={40} />

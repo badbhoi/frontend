@@ -63,65 +63,117 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user) {
-        const profile = await fetchUserProfile(session.user.id)
-        
-        if (profile) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email!,
-            username: profile.username,
-            balance: profile.balance,
-            transaction: profile.transactions
-          })
-        }
-      } else {
-        setUser(null)
+
+          const profile = await fetchUserProfile(session.user.id)
+      
+      if (profile) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          username: profile.username,
+          balance: profile.balance,
+          transaction: profile.transactions
+        })
       }
-    } catch (error) {
-      console.error('Error refreshing user:', error)
+    } else {
       setUser(null)
     }
-  }, [])
+  } catch (error) {
+    console.error('Error refreshing user:', error)
+    setUser(null)
+  } finally {
+    setLoading(false) // Add this line
+  }
+}, [])
+  //       const profile = await fetchUserProfile(session.user.id)
+        
+  //       if (profile) {
+  //         setUser({
+  //           id: session.user.id,
+  //           email: session.user.email!,
+  //           username: profile.username,
+  //           balance: profile.balance,
+  //           transaction: profile.transactions
+  //         })
+  //       }
+  //     } else {
+  //       setUser(null)
+  //     }
+  //   } catch (error) {
+  //     console.error('Error refreshing user:', error)
+  //     setUser(null)
+  //   }
+  // }, [])
+
+  // useEffect(() => {
+  //   // Get initial session
+  //   supabase.auth.getSession().then(({ data: { session } }) => {
+  //     if (session?.user) {
+  //       setUser({
+  //         id: session.user.id,
+  //         email: session.user.email!,
+  //         username: session.user.user_metadata?.username,
+  //         balance: session.user.user_metadata?.balance,
+  //       })
+  //     } else {
+  //       setUser(null)
+  //     }
+  //     setLoading(false)
+  //   })
+
+  //   // const { data: { subscription } } = supabase.auth.onAuthStateChange(
+  //   //   async (event, session) => {
+  //   //     console.log(event)
+  //   //     if (session?.user) {
+  //   //       const profile = await fetchUserProfile(session.user.id)
+          
+  //   //       if (profile) {
+  //   //         setUser({
+  //   //           id: session.user.id,
+  //   //           email: session.user.email!,
+  //   //           username: profile.username,
+  //   //           balance: profile.balance,
+  //   //           transaction: profile.transactions
+  //   //         })
+  //   //       }
+  //   //     } else {
+  //   //       setUser(null)
+  //   //     }
+  //   //   }
+  //   // )
+
+  //   // return () => subscription.unsubscribe()
+  // }, [])
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+  // Get initial session and fetch profile data
+  supabase.auth.getSession().then(async ({ data: { session } }) => {
+    if (session?.user) {
+      const profile = await fetchUserProfile(session.user.id)
+      
+      if (profile) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          username: profile.username,
+          balance: profile.balance,
+          transaction: profile.transactions
+        })
+      } else {
+        // Fallback to user_metadata if profile doesn't exist
         setUser({
           id: session.user.id,
           email: session.user.email!,
           username: session.user.user_metadata?.username,
           balance: session.user.user_metadata?.balance,
         })
-      } else {
-        setUser(null)
       }
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log(event)
-        if (session?.user) {
-          const profile = await fetchUserProfile(session.user.id)
-          
-          if (profile) {
-            setUser({
-              id: session.user.id,
-              email: session.user.email!,
-              username: profile.username,
-              balance: profile.balance,
-              transaction: profile.transactions
-            })
-          }
-        } else {
-          setUser(null)
-        }
-      }
-    )
-
-    return () => subscription.unsubscribe()
-  }, [])
+    } else {
+      setUser(null)
+    }
+    setLoading(false)
+  })
+}, [])
 
   const value: AuthContextType = {
     user,
